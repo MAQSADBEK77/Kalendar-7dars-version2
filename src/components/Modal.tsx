@@ -1,7 +1,14 @@
 import { useState } from "react";
 
-function Modal({ onClose, selectedDate, handleSave }) {
+interface ModalProps {
+  onClose: () => void;
+  selectedDate: string;
+  handleSave: (title: string, selectedDate: string) => void;
+}
+
+function Modal({ onClose, selectedDate, handleSave }: ModalProps) {
   const [title, setTitle] = useState("");
+
   return (
     <div className="modal">
       <div className="modal-content">
@@ -15,7 +22,15 @@ function Modal({ onClose, selectedDate, handleSave }) {
         />
         <div className="modal-actions">
           <button onClick={onClose}>Bekor qilish</button>
-          <button onClick={() => handleSave(title, selectedDate)}>Saqlash</button>
+          <button
+            onClick={() => {
+              if (title.trim()) {
+                handleSave(title, selectedDate);
+                setTitle(""); // Inputni tozalash
+              }
+            }}>
+            Saqlash
+          </button>
         </div>
       </div>
     </div>

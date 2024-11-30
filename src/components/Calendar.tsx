@@ -5,42 +5,51 @@ function Calendar() {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [isModalOpen, setModalOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState("");
-  let saveEvents = JSON.parse(localStorage.getItem("eventDate"));
+
+  // localStorage'dan saqlangan voqealarni olish
+  const saveEvents: { title: string; selectedDate: string }[] = JSON.parse(
+    localStorage.getItem("eventDate") || "[]"
+  );
+
   const endOfMonth = new Date(
     currentDate.getFullYear(),
     currentDate.getMonth() + 1,
     0
   );
-  const daysInMonth = Array.from(
-    { length: endOfMonth.getDate() },
-    (_, i) => new Date(currentDate.getFullYear(), currentDate.getMonth(), i + 1)
-  );
+
+  const daysInMonth = [];
+  const totalDays = endOfMonth.getDate();
+
+  for (let i = 1; i <= totalDays; i++) {
+    daysInMonth.push(
+      new Date(currentDate.getFullYear(), currentDate.getMonth(), i)
+    );
+  }
+
   function handleOrtga() {
     setCurrentDate(
       new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1)
     );
   }
+
   function hundleKeyingi() {
     setCurrentDate(
       new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1)
     );
   }
+
   function clickAddEvent(dateString: string) {
     setSelectedDate(dateString);
     setModalOpen(true);
-    console.log(dateString);
   }
-  function handleSave(title: string, selectedDate: string) {
-    let eventDateArray;
-    setModalOpen(false);
-    let localDate = JSON.parse(localStorage.getItem("eventDate"));
-    console.log(localDate);
 
-    localDate
-      ? (eventDateArray = [...localDate, { title, selectedDate }])
-      : (eventDateArray = [{ title, selectedDate }]);
+  function handleSave(title: string, selectedDate: string) {
+    setModalOpen(false);
+    const localDate = JSON.parse(localStorage.getItem("eventDate") || "[]");
+    const eventDateArray = [...localDate, { title, selectedDate }];
     localStorage.setItem("eventDate", JSON.stringify(eventDateArray));
   }
+
   return (
     <div className="calendar-container">
       <div className="calendar-header">
@@ -54,25 +63,20 @@ function Calendar() {
       <div className="calendar-grid">
         {daysInMonth.map((day) => {
           const dateString = day.toISOString().split("T")[0];
-          saveEvents &&
-            saveEvents.map((event: any) => {
-              if (event.title == dateString) {
-                return (
-                  <div key={dateString} className="calendar-day">
-                    <span>{day.getDate()}</span>
-                    <div className="events">
-                      <div className="event">{event.title}</div>
-                      <button onClick={() => clickAddEvent(dateString)}>
-                        Add Event
-                      </button>
-                    </div>
-                  </div>
-                );
-              }
-            });
+          const eventsForDay = saveEvents.filter(
+            (event) => event.selectedDate === dateString
+          );
+
           return (
             <div key={dateString} className="calendar-day">
               <span>{day.getDate()}</span>
+              <div className="events">
+                {eventsForDay.map((event, index) => (
+                  <div key={index} className="event">
+                    {event.title}
+                  </div>
+                ))}
+              </div>
               <button onClick={() => clickAddEvent(dateString)}>
                 Add Event
               </button>
